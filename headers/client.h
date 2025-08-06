@@ -109,18 +109,22 @@ private:
   }
 
   void read_body() {
-    asio::async_read(client_socket_,
-                     asio::buffer(placeholderBuffer->body.data(),
-                                  placeholderBuffer->body.size()),
-                     [this](std::error_code ec, std::size_t) mutable {
-                       if (!ec) {
-                         internalQueue.push_back(std::move(placeholderBuffer));
-                         read_header();
-                       } else {
-                         cl.log("Read body error: " + ec.message(), 0, 1);
-                         client_socket_.close();
-                       }
-                     });
+    auto temp_raw_bytes_vec = std::make_shared<std::vector<int8_t>>();
+    temp_raw_bytes_vec->resize(placeholderBuffer->header.total_size_of_body);
+    asio::async_read(
+        client_socket_, asio::buffer(*temp_raw_bytes_vec),
+        [this, temp_raw_bytes_vec](std::error_code ec, std::size_t) mutable {
+          if (!ec) {
+            auto buffer = network_common_utilites::
+                raw_buffer_to_standar_message_for_reading_body<
+                    network_common_utilites::MetaState>(*temp_raw_bytes_vec);
+            internalQueue.push_back(std::move(buffer));
+            read_header();
+          } else {
+            cl.log("Read body error: " + ec.message(), 0, 1);
+            client_socket_.close();
+          }
+        });
   }
 
 public:

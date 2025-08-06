@@ -113,9 +113,18 @@ private:
         });
   };
   void write_body(network_common_utilites::message<MetaState> msg) {
+    std::vector<int8_t> temp_buff_binary;
+    for (auto &pl : msg.body) {
+      const auto *header_ptr =
+          reinterpret_cast<const int8_t *>(&pl.payload_header);
+      temp_buff_binary.insert(temp_buff_binary.end(), header_ptr,
+                              header_ptr + sizeof(pl.payload_header));
+      temp_buff_binary.insert(temp_buff_binary.end(), pl.payload_body.begin(),
+                              pl.payload_body.end());
+    }
     asio::async_write(
         client_socket,
-        asio::buffer(msg.body.data(), msg.header.total_size_of_body),
+        asio::buffer(temp_buff_binary.data(), msg.header.total_size_of_body),
         [this](std::error_code ec, std::size_t /*length*/) {
           if (!ec) {
             write_head();
