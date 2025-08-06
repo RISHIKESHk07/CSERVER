@@ -1,17 +1,17 @@
 # OVERLY_ENGINEERED_GAME_NETWORK_LAYER_FOR_NOOBS(needs to be adapted to unity model latter on .... sadly life sucks ... )
 ## IDEA:
-- Make a server which accepts all messages and logs to single window for people to see and use a persistent db for storing 
+- Make a server which accepts all messages and logs to a  monitoring window/file for people to see and use a persistent db for storing 
 - Make a client to push messages and then accept messages
 - Manage resources of network , like see current users , history of logs , disconnect users manually etc
 - Server & client have a single q for processing and client has a single outgoing q for messages and throttling control 
-- Needs to SUPPORT HTTP 1.0 cloonections and websocket connections as well .... hopefully
+- Needs to SUPPORT HTTP 1.0 connections and websocket connections as well .... hopefully
 ## EXTRA_STUFF_WHICH_NEED_TO_DO:
 - P2P connection option .. insane rn ... bittorrent protocol is insane though
 - Send compressed images .. dreaming of it rn
 - Checkout XMPP & WebRTC for enhancing .... life sucks here rn 
 ## TECH_STACK
 - ASIO FOR NETWORKING
-- NCURSES FOR THE UI
+- NCURSES FOR THE UI (checking out microui instead)
 - GDB debugger
 ## PROGRESS
 -[x] Setup a repo
