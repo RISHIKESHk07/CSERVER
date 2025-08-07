@@ -14,9 +14,9 @@
 - NCURSES FOR THE UI (checking out microui instead)
 - GDB debugger
 ## PROGRESS
--[x] Setup a repo
--[x] GOT the message layer to work with my nasty message encoding
--[] Need to read tiny web server & simple web server for a http server spike and impl thread pools , db connection pools , and then websocket protocol impl as well.
+- [x] Setup a repo
+- [x] GOT the message layer to work with my nasty message encoding
+- [ ] Need to read tiny web server & simple web server for a http server spike and impl thread pools , db connection pools , and then websocket protocol impl as well.
 ## REFERENCE&NOTES 
 ### TINY_WEB_SERVER
 - Need to read the thread pool impl & the low level impl of the epoll/proactor , and figure out webbench benchmarks 
