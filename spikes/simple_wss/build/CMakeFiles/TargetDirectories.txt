@@ -1,0 +1,3 @@
+/home/intelliagent-19/Desktop/Projects/CSERVER/spikes/simple_wss/build/CMakeFiles/tls_server.dir
+/home/intelliagent-19/Desktop/Projects/CSERVER/spikes/simple_wss/build/CMakeFiles/edit_cache.dir
+/home/intelliagent-19/Desktop/Projects/CSERVER/spikes/simple_wss/build/CMakeFiles/rebuild_cache.dir

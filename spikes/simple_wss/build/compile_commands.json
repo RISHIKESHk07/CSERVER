@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/home/intelliagent-19/Desktop/Projects/CSERVER/spikes/simple_wss/build",
+  "command": "/usr/bin/c++ -DBOOST_ALL_NO_LIB -DBOOST_SYSTEM_DYN_LINK  -std=gnu++17 -o CMakeFiles/tls_server.dir/server.cpp.o -c /home/intelliagent-19/Desktop/Projects/CSERVER/spikes/simple_wss/server.cpp",
+  "file": "/home/intelliagent-19/Desktop/Projects/CSERVER/spikes/simple_wss/server.cpp",
+  "output": "CMakeFiles/tls_server.dir/server.cpp.o"
+}
+]
