@@ -1,9 +1,13 @@
 #include <bits/stdc++.h>
 #include <boost/asio.hpp>
 #include <boost/asio/detail/std_fenced_block.hpp>
+#include <boost/asio/read.hpp>
 #include <boost/asio/ssl.hpp>
+#include <boost/system/error_code.hpp>
 #include <cstddef>
 #include <memory>
+#include <ostream>
+#include <sstream>
 #include <string>
 
 class Connection;
@@ -100,7 +104,7 @@ protected:
           [](std::shared_ptr<Request> &req, std::shared_ptr<Response> &res) {
             std::cout << "404 Page " << std::endl;
           };
-
+  bool keepALive = 0;
   void load_ssl_options() {
     try {
       const char *cert_path = "server.crt";
@@ -150,19 +154,44 @@ protected:
             if (!line.empty())
               request_parser(line);
             // need to make a callback func here for exec the server callback of
+            write(conn);
             std::cout << line << std::endl;
-            if (path.length() != 0) {
-              if (requesthandlercallback(path, method, conn->req, conn->res))
-                std::cout << "Handler request processed" << std::endl;
-              else
-                default_callback(conn->req, conn->res);
-            }
             // send a simlpe write message
           } else {
             std::cout << "Error at read:" << error.message() << std::endl;
           }
         });
   };
+
+  void write(const std::shared_ptr<Connection> &conn) {
+    boost::asio::post([this, conn] {
+      // take care of the request handler for the endpoint /blah.....
+      if (path.length() != 0) {
+        if (requesthandlercallback(path, method, conn->req, conn->res))
+          std::cout << "Handler request processed" << std::endl;
+        else
+          default_callback(conn->req, conn->res);
+      }
+      // writing operation should be done here .... sse , te or file serving
+
+      // cleaning operation for closing a connection obj and corresponding ssl
+      // socket ...
+      if (!keepALive) {
+
+        conn->conn_socket.async_shutdown(
+            [this, conn](const boost::system::error_code &ec) {
+              if (!ec) {
+                conn->conn_socket.lowest_layer().close();
+              } else {
+                std::cout << ec.message() << std::endl;
+              }
+            });
+        connections_list.erase(std::remove_if(
+            connections_list.begin(), connections_list.end(),
+            [conn](const auto &n_conn) { return conn == n_conn; }));
+      }
+    });
+  }
 
   void request_parser(std::string request_content) {
     // request_parser for query string , content-length ,version
@@ -173,7 +202,6 @@ protected:
     std::string full_path;
     std::istringstream rl(request_line);
     rl >> method >> full_path >> version;
-    std::cout << method << "--" << full_path << "--" << version << std::endl;
     // Extract path and query
     auto qpos = full_path.find("?");
     path = (qpos != std::string::npos) ? full_path.substr(0, qpos) : full_path;
@@ -196,15 +224,34 @@ protected:
         }
       }
     }
+
+    bool te_flag = 0;
+    bool sse_flag = 0;
     // header_parsing
     while (std::getline(iss, request_line)) {
       auto e_pos = request_line.find("=");
       ParsedResourceMap[request_line.substr(0, e_pos)] =
-          request_line.substr(e_pos + 1, request_line.length() - e_pos - 1);
+          request_line.substr(e_pos + 2, request_line.length() - e_pos - 2);
+      if (request_line.substr(0, e_pos) == "Transfer-Encoding" &&
+          request_line.substr(e_pos + 2, request_line.length() - e_pos - 2) ==
+              "chunked") {
+        te_flag = 1;
+        keepALive = 1;
+      }
+      if (request_line.substr(0, e_pos) == "Content-Type" &&
+          request_line.substr(e_pos + 2, request_line.length() - e_pos - 2) ==
+              "text/event-stream") {
+        sse_flag = 1;
+        keepALive = 1;
+      }
     }
     // removing the rndline to body
     std::getline(iss, request_line);
   }
+
+  void read_chunked_transfer(const std::shared_ptr<Connection> &conn,
+                             std::stringstream &iss,
+                             std::shared_ptr<Request> req) {}
 
   bool requesthandlercallback(std::string &regex, std::string &method,
                               std::shared_ptr<Request> &req,
